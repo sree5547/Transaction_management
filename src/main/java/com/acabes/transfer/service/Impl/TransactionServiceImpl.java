@@ -29,7 +29,8 @@ public class TransactionServiceImpl implements TransactionService {
     private TransactionRepository transactionRepository;
 
     @Override
-    public AccountTransferResponseDTO createTransaction(CreateTransactionDTO createTransactionDTO) {
+    public String createTransaction(CreateTransactionDTO createTransactionDTO) {
+        String response;
         Transaction transaction = new Transaction();
         transaction.setTimestamp(Instant.now());
 
@@ -48,33 +49,28 @@ public class TransactionServiceImpl implements TransactionService {
             requestDTO.setToAccountId(transaction.getReceiverAccount());
             requestDTO.setFromAccountId(transaction.getSenderAccount());
 
+            TransactionDTO modifiedRequest = new TransactionDTO(createTransactionDTO);
 
-            accountClient.transferAmount(requestDTO);
-            log.info("Transfer successful for transaction {}", transaction.getId());
-            transaction.setStatus(TransactionStatus.SUCCESS);
+
+        response =  accountClient.transferAmount(modifiedRequest);
+            if(response.startsWith("₹")){
+                transaction.setStatus(TransactionStatus.SUCCESS);
+            } else {
+                transaction.setStatus(TransactionStatus.FAILED);
+            }
 
         } catch (FeignException e) {
-
-            log.error("Transaction {} failed. Feign client call to account-service failed with status {} and body: {}",
-                    transaction.getId(), e.status(), e.contentUTF8(), e);
-
-            throw new RuntimeException(e.contentUTF8());
-        } catch (Exception e) {
-
-            log.error("An unexpected error occurred during transaction {}: {}", transaction.getId(), e.getMessage(), e);
-            throw new RuntimeException(e.getMessage());
+            transaction.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(transaction);
+            return e.contentUTF8();
+        } catch (Exception e ) {
+            transaction.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(transaction);
+            return e.getMessage();
         }
 
-
-
         transactionRepository.save(transaction);
-
-        AccountTransferResponseDTO responseDTO = new AccountTransferResponseDTO();
-        responseDTO.setTransactionId(transaction.getId());
-        responseDTO.setResponseMessage("The transaction was successful");
-        responseDTO.setStatus(transaction.getStatus());
-
-        return responseDTO;
+        return response;
 
     }
 

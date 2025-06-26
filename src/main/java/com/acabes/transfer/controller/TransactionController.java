@@ -18,7 +18,6 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/api/transactions")
-@CrossOrigin(origins = "*")
 public class TransactionController {
 
     @Autowired
@@ -27,10 +26,10 @@ public class TransactionController {
 
     // Create a new transaction (handles debit + credit)
     @PostMapping("/create")
-    public ResponseEntity<AccountTransferResponseDTO> createTransaction(@RequestBody CreateTransactionDTO createTransactionDTO) {
+    public ResponseEntity<String> createTransaction(@RequestBody CreateTransactionDTO createTransactionDTO) {
         log.info("Received request to create transaction: {}", createTransactionDTO);
-        AccountTransferResponseDTO created = transactionService.createTransaction(createTransactionDTO);
-        return ResponseEntity.ok(created);
+        String response = transactionService.createTransaction(createTransactionDTO);
+        return ResponseEntity.ok(response);
     }
 
 

@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface TransactionService {
 
-    AccountTransferResponseDTO createTransaction(CreateTransactionDTO transaction);
+    String createTransaction(CreateTransactionDTO transaction);
 
     Transaction updateTransactionStatus(Long id, TransactionStatus status);
 

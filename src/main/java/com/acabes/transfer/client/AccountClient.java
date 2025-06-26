@@ -1,21 +1,19 @@
 package com.acabes.transfer.client;
 
 import com.acabes.transfer.dto.AccountDetailsResponseDTO;
-import com.acabes.transfer.dto.AccountTransferRequestDTO;
+import com.acabes.transfer.dto.TransactionDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-
-@FeignClient(name = "account-service", url = "https://831d-111-92-81-182.ngrok-free.app/api/accounts")
+@FeignClient(
+        name = "account-service",
+        url = "https://tadpole-closing-prawn.ngrok-free.app",
+        configuration = com.acabes.transfer.configurations.FeignCustomConfig.class
+)
 public interface AccountClient {
 
+    @PostMapping("/api/accounts/transfer")
+    String transferAmount(@RequestBody TransactionDTO requestDTO);
 
-
-    @PostMapping("/transfer")
-    String transferAmount(@RequestBody AccountTransferRequestDTO requestDTO);
-
-    @GetMapping("/{accountId}")
+    @GetMapping("/api/accounts/{accountId}")
     AccountDetailsResponseDTO getAccountDetails(@PathVariable String accountId);
 }
-
